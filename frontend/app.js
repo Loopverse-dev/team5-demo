@@ -3,6 +3,13 @@ const boardEl = document.getElementById('board');
 const statusEl = document.getElementById('status');
 const turnEl = document.getElementById('turn');
 const restartBtn = document.getElementById('restart');
+const resultModal = document.getElementById('result-modal');
+const resultTitle = document.getElementById('result-title');
+const resultSub = document.getElementById('result-sub');
+const resultIcon = document.getElementById('result-icon');
+const playAgainBtn = document.getElementById('play-again');
+const splash = document.getElementById('splash');
+const startBtn = document.getElementById('start-btn');
 
 let board = Array(9).fill(null);
 let current = 'X';
@@ -53,7 +60,10 @@ function checkGame(){
       // win
       running = false;
       highlightWin(line);
-      statusEl.innerHTML = `Winner: <strong>${board[a]}</strong>`;
+      const winner = board[a];
+      statusEl.innerHTML = `Winner: <strong>${winner}</strong>`;
+      // show result modal with animation
+      showResult(true, winner);
       return;
     }
   }
@@ -62,6 +72,7 @@ function checkGame(){
     running = false;
     statusEl.textContent = 'Draw';
     statusEl.classList.add('draw');
+    showResult(false, null, true);
     return;
   }
 }
@@ -83,6 +94,58 @@ restartBtn.addEventListener('click', ()=>{
   statusEl.classList.remove('draw');
   turnEl.textContent = current;
   renderBoard();
+});
+
+function showResult(isWin, winner = null, isDraw = false){
+  if(isDraw){
+    resultIcon.textContent = '🤝';
+    resultTitle.textContent = `Draw`;
+    resultSub.textContent = `Nobody won — try again.`;
+  } else if(isWin){
+    resultIcon.textContent = '🏆';
+    resultTitle.textContent = `Winner!`;
+    resultSub.textContent = `Player ${winner} wins the match.`;
+  } else {
+    resultIcon.textContent = '😞';
+    resultTitle.textContent = `You Lost`;
+    resultSub.textContent = `Try again to beat your opponent.`;
+  }
+  resultModal.setAttribute('aria-hidden','false');
+}
+
+function hideResult(){
+  resultModal.setAttribute('aria-hidden','true');
+}
+
+playAgainBtn.addEventListener('click', ()=>{
+  hideResult();
+  restartBtn.click();
+});
+
+// Splash control
+function hideSplash(){
+  if(!splash) return;
+  // add fade-out class to animate, then remove from layout after animation
+  splash.classList.add('fade-out');
+  setTimeout(()=>{
+    try{ splash.style.display = 'none'; }catch(e){}
+  }, 480);
+}
+
+startBtn.addEventListener('click', ()=>{
+  hideSplash();
+});
+
+// auto-hide splash after 2 seconds
+setTimeout(()=>{
+  hideSplash();
+}, 2000);
+
+// allow clicking outside modal to close and restart
+resultModal.addEventListener('click', (e)=>{
+  if(e.target === resultModal){
+    hideResult();
+  }
 });
 
 // init
